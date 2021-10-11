@@ -5,6 +5,9 @@ Vue.use(VueRouter)
 const routes = [{
   path: '/sellerpage',
   component: () => import('@/views/SellerPage')
+}, {
+  path: '/trendpage',
+  component: () => import('@/views/TrendPage')
 }]
 
 const router = new VueRouter({
