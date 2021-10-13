@@ -1,14 +1,14 @@
 <template>
   <div class="com-page">
-    <Trend></Trend>
+    <rank></rank>
   </div>
 </template>
 
 <script>
-import Trend from '@/components/Trend'
+import Rank from '@/components/Rank'
 export default {
   components: {
-    Trend
+    rank: Rank
   }
 }
 </script>

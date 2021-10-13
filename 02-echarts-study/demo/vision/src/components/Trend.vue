@@ -2,11 +2,11 @@
 -->
 <template>
   <div class="com-container">
-    <div class="title">
-      <span>我是标题</span>
-      <span class="iconfont title-icon">&#xe6eb;</span>
-      <div class="select-con">
-        <div class="select-item" v-for="item in selectTypes" :key="item.key">
+    <div class="title" :style="comStyle">
+      <span>{{'▍ ' + showTitle}}</span>
+      <span class="iconfont title-icon" :style="comStyle" @click="showChoice=!showChoice">&#xe6eb;</span>
+      <div class="select-con" v-show="showChoice" :style="marginStyle">
+        <div class="select-item" v-for="item in selectTypes" :key="item.key" @click="handleSelect(item.key)">
           {{item.text}}
         </div>
       </div>
@@ -21,6 +21,9 @@ export default {
     return {
       chartInstance: null,
       allData: null,  // 从服务器获取的所有数据
+      showChoice: false, // 是否显示可选项
+      choiceType: 'map', // 显示的类型
+      titleFont: 0, // 指明标题的字体大小
     }
   },
   mounted () {
@@ -37,11 +40,37 @@ export default {
       if (!this.allData) {
         return []
       } else {
-        return this.allData.type
+        return this.allData.type.filter(item => {
+          return item.key !== this.choiceType
+        })
+      }
+    },
+    showTitle () {
+      if (!this.allData) {
+        return ''
+      } else {
+        return this.allData[this.choiceType].title
+      }
+    },
+    // 设置给标题的样式
+    comStyle () {
+      return {
+        fontSize: this.titleFont + 'px'
+      }
+    },
+    marginStyle () {
+      return {
+        marginLeft: this.titleFont + 'px'
       }
     }
   },
   methods: {
+    handleSelect (currentType) {
+      // console.log('curr', currentType)
+      this.choiceType = currentType
+      this.updateChart()
+      this.showChoice = false
+    },
     initChart () {
       this.chartInstance = this.$echarts.init(this.$refs.trend_ref, 'chalk')
       const initOption = {
@@ -96,13 +125,14 @@ export default {
       // 类目轴数据
       const timeArr = this.allData.common.month
       // y轴数据 series 下的数据
-      const valueArr = this.allData.map.data
+      const valueArr = this.allData[this.choiceType].data
       const seriesArr = valueArr.map((item, index) => {
         return {
           name: item.name, // 图例的值需要和series下的name保持一致 
           type: 'line',
           data: item.data,
-          stack: 'map',  // 堆叠图，每一条类目轴使用相同值
+          // stack: 'map',  // 堆叠图，每一条类目轴使用相同值
+          stack: this.choiceType,
           areaStyle: {
             color: new this.$echarts.graphic.LinearGradient(0, 0, 0, 1, [
               // 0%的颜色值
@@ -136,8 +166,18 @@ export default {
       this.chartInstance.setOption(dataOption)
     },
     screenAdapter () {
+      this.titleFont = this.$refs.trend_ref.offsetWidth / 100 * 3.6
       // 处理适配的option
-      const adapterOption = {}
+      const adapterOption = {
+        legend: {
+          itemWidth: this.titleFont,
+          itemHeight: this.titleFont,
+          itemGap: this.titleFont,
+          textStyle: {
+            fontSize: this.titleFont / 2
+          }
+        }
+      }
       this.chartInstance.setOption(adapterOption)
       this.chartInstance.resize()
     }
@@ -155,6 +195,12 @@ export default {
   .title-icon {
     margin-left: 10px;
     cursor: pointer;
+  }
+  .select-con  {
+    background: #222333;
+    .select-item {
+      cursor: pointer;
+    }
   }
 }
 </style>

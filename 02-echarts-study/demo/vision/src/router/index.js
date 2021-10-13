@@ -3,12 +3,26 @@ import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
 const routes = [{
-  path: '/sellerpage',
-  component: () => import('@/views/SellerPage')
-}, {
-  path: '/trendpage',
-  component: () => import('@/views/TrendPage')
-}]
+    path: '/sellerpage',
+    component: () => import('@/views/SellerPage')
+  },
+  {
+    path: '/trendpage',
+    component: () => import('@/views/TrendPage')
+  },
+  {
+    path: '/mappage',
+    component: () => import('@/views/MapPage')
+  },
+  {
+    path: '/rankpage',
+    component: () => import('@/views/RankPage')
+  },
+  {
+    path: '/hotpage',
+    component: () => import('@/views/HotPage')
+  }
+]
 
 const router = new VueRouter({
   routes

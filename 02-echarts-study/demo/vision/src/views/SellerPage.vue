@@ -4,7 +4,7 @@
 -->
 <template>
   <div class="com-page">
-    <seller></seller>
+    <Seller></Seller>
   </div>
 </template>
 
