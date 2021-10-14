@@ -4,9 +4,9 @@
 <template>
   <div class="com-container">
     <div class="com-chart" ref="hot_ref"></div>
-    <span class="iconfont arr-left" @click="toLeft">&#xe6ef;</span>
-    <span class="iconfont arr-right" @click="toRight">&#xe6ed;</span>
-    <span class="cat-name">{{catName}}</span>
+    <span class="iconfont arr-left" @click="toLeft" :style="comStyle">&#xe6ef;</span>
+    <span class="iconfont arr-right" @click="toRight" :style="comStyle">&#xe6ed;</span>
+    <span class="cat-name" :style="comStyle">{{catName}}</span>
   </div>
 </template>
 
@@ -17,6 +17,7 @@ export default {
       chartInstance: null,
       allData: null, // 服务器返回的所有数据
       currentIndex: 0, // 当前所展示出的一级分类数据
+      titleFontSize: 0
     }
   },
   computed: {
@@ -25,6 +26,11 @@ export default {
         return ''
       } else {
         return this.allData[this.currentIndex].name
+      }
+    },
+    comStyle () {
+      return {
+        fontSize: this.titleFontSize + 'px'
       }
     }
   },
@@ -40,11 +46,52 @@ export default {
   methods: {
     // 初始化 echartInstance 实例对象
     initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.hot_ref)
+      this.chartInstance = this.$echarts.init(this.$refs.hot_ref, 'chalk')
       const initOption = {
+        title: {
+          text: '▍ 热销商品的占比',
+          left: 20,
+          top: 20
+        },
+        legend: {
+          top: '15%',
+          icon: 'circle'
+        },
+        tooltip: {
+          show: true,
+          formatter: arg => {
+            // 二级下的三级分类
+            const thirdCategory = arg.data.children
+            // 计算出所有三级分类的数值总和
+            let total = 0
+            for (let item in thirdCategory) {
+              total += thirdCategory[item].value
+            }
+            let retStr = ''
+            for (let item in thirdCategory) {
+              retStr += `${thirdCategory[item].name}:${parseInt(thirdCategory[item].value / total * 100) + '%'}
+              <br />
+              `
+            }
+            return retStr
+          }
+        },
         series: [
           {
-            type: 'pie'
+            type: 'pie',
+            label: {
+              show: false
+            },
+            // 高亮状态下/鼠标移入时候显示
+            emphasis: {
+              label: {
+                show: true
+              },
+              // 指向文字的线
+              labelLine: {
+                show: false
+              }
+            }
           }
         ]
       }
@@ -66,10 +113,12 @@ export default {
       const seriesData = this.allData[this.currentIndex].children.map(item => {
         return {
           name: item.name,
-          value: item.value
+          value: item.value,
+          // 新增children的原因是为了在tooltip中的formatter的回调函数中，来拿到二级数据
+          children: item.children
         }
       })
-      console.log('ser', seriesData);
+      // console.log('ser', seriesData);
       const dataOption = {
         legend: {
           data: legendData
@@ -84,7 +133,28 @@ export default {
     },
     // 屏幕适配
     screenAdapter () {
-      const adapterOption = {}
+      this.titleFontSize = this.$refs.hot_ref.offsetWidth / 100 * 3.6
+      const adapterOption = {
+        title: {
+          textStyle: {
+            fontSize: this.titleFontSize / 2
+          }
+        },
+        legend: {
+          itemWidth: this.titleFontSize / 2,
+          itemHeight: this.titleFontSize / 2,
+          itemGap: this.titleFontSize / 2,
+          textStyle: {
+            fontSize: this.titleFontSize / 2
+          }
+        },
+        series: [
+          {
+            radius: this.titleFontSize * 4,
+            center: ['50%', '62%']
+          }
+        ]
+      }
       this.chartInstance.setOption(adapterOption)
       this.chartInstance.resize()
     },
@@ -112,16 +182,21 @@ export default {
   left: 10%;
   top: 50%;
   transform: translateY(-50%);
+  cursor: pointer;
+  color: #FFF;
 }
 .arr-right {
   position: absolute;
   right: 10%;
   top: 50%;
   transform: translateY(-50%);
+  cursor: pointer;
+  color: #FFF;
 }
 .cat-name {
   position: absolute;
   left: 80%;
   bottom: 20px;
+  color: #FFF;
 }
 </style>
